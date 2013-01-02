@@ -1,0 +1,84 @@
+#!/bin/bash
+
+echo    '** Thredded messageboard setup **'
+echo    ''
+echo    '  For optimal preparedness you should be:'
+echo    '  1. Authenticated into github from the command-line'
+echo    '  2. Be using something like RVM, RBEnv or chruby.'
+echo    ''
+echo    '  [Optional]'
+echo    '  3. Have the heroku toolbelt installed.'
+echo    '  3b. Be logged into heroku from the command-line.'
+echo    '  3c. Have your amazon s3 secret id and key available.'
+echo    ''
+read -p '  To continue press [ENTER]:'
+echo    ''
+
+# 1. check for postgres
+if ! type "psql" >/dev/null 2>/dev/null; then
+  echo ''
+  echo '  We have detected that you do not have Postgresql installed.'
+  echo '  Please make sure to install Postgres first before re-running this.'
+  echo '  For Ubuntu/Debian: `sudo apt-get install postgresql-9.1`'
+  echo '  For Max OSX: `brew install postgresql`'
+  echo ''
+  exit
+fi
+
+# 2. test that bundler exists (gem install bundler if not)
+if ! type "bundle"; then
+  echo '*  Installing bundler.'
+  gem install bundler >/dev/null 2>/dev/null
+fi
+
+# 3. bundle install
+echo '*  Installing gems with `bundle install`.'
+bundle install >/dev/null 2>/dev/null
+
+# 4. prompt for <enter> until user has edited database.yml
+read -p '*  Ensure that the contents of config/database.yml are corrent. Once you are ready press [ENTER]:'
+
+# 5. rake db:create db:migrate db:test:prepare
+echo '*  Creating databases - development and test - and necessary tables.'
+rake db:create db:migrate db:test:prepare >/dev/null 2>/dev/null
+
+# 6. prompt for full test suite run. y? `rake`. n? continue
+read -p '*  Would you like to run the test suite? (y/n)? '
+if [ "$REPLY" == "y" ]; then
+  rake
+fi
+
+# 7. ask if they want to fork to their own github account?
+read -p '*  Would you like to fork this repo from jayroh/thredded to your own github account? (y/n)? '
+if [ "$REPLY" == "y" ]; then
+  hub fork
+fi
+
+# 8. If `heroku` is available ask if they want to create an app
+if type "heroku" >/dev/null 2>/dev/null; then
+  read -p "*  Would you like to create and deploy to heroku [NOTE: You will need your amazon s3 `access key id` and `secret access key`] (y/n)? "
+  if [ "$REPLY" == "y" ]; then
+    read -p "* Paste your Access Key ID: " ACCESS_KEY_ID
+    read -p "* Paste your Secret Access Key: " SECRET_ACCESS_KEY
+
+    git add -A
+    git commit -m "Commit before deploy to heroku"
+
+    heroku apps:create
+    APP_NAME=`heroku apps:info -r | grep name | grep -v domain | grep -v owner | cut -d= -f2`
+
+    heroku addons:add sendgrid:starter
+    heroku config:set AWS_ACCESS_KEY_ID=$ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$SECRET_ACCESS_KEY
+    git push heroku master
+    heroku run rake db:migrate --app $APP_NAME
+    heroku open --app $APP_NAME
+    echo "*  Thredded app deployed to heroku as \"$APP_NAME\"."
+    echo "*  Sendgrid addon created for \"$APP_NAME\""
+  fi
+fi
+
+echo ''
+echo '  * * *'
+echo ''
+echo '  All set! To run the app: `rails s`'
+echo ''
