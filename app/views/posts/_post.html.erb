@@ -6,7 +6,9 @@
     </cite>
     <div class="meta">
       <% if post.user && post.user.roles && post.user.posts_count -%>
+        <% unless post.user.roles.nil? %>
         <span class="roles"><%= post.user.roles.for(messageboard).map(&:level).to_sentence %></span>
+        <% end %>
         <span class="posts_count"><%= post.user.posts_count %> posts</span>
       <%- end -%>
       <abbr class="timeago" title="<%= post.created_timestamp %>"><%= post.created_date %></abbr>
