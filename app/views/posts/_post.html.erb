@@ -6,7 +6,7 @@
     </cite>
     <div class="meta">
       <% if post.user && post.user.roles && post.user.posts_count -%>
-        <% unless post.user.roles.nil? %>
+        <% if post.user.roles.any? %>
         <span class="roles"><%= post.user.roles.for(messageboard).map(&:level).to_sentence %></span>
         <% end %>
         <span class="posts_count"><%= post.user.posts_count %> posts</span>
