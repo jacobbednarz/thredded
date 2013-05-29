@@ -8,7 +8,7 @@ body#user-profile {
     border: none !important;
   }
 
-  #user-profile-header {
+  #content header {
     background: #ededed;
     color: #646363;
     padding: 10px 10px 5px 10px;
@@ -18,6 +18,12 @@ body#user-profile {
     img {
       float: left;
       padding-right: 10px;
+    }
+
+    ul {
+      list-style: none;
+      font-size: .9em;
+      min-height: 142px;
     }
   }
 

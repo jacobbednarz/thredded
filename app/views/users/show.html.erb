@@ -1,58 +1,41 @@
 <% content_for :page_id do %>user-profile<% end %>
 <% content_for :page_title do %><%= @user.name %> | Users<% end %>
 
-<div id="user-profile-header">
+<header>
   <%= image_tag @user.gravatar_url %>
-  <div id="user-profile-header-info">
-    <p><b>Username:</b> <%= @user.name %></p>
-    <p><b>Location:</b> <%= @user.time_zone %> (should be location)</p>
-    <p><b>Last activity:</b> <%= time_ago_in_words(@user.last_sign_in_at) %> ago</p
-    <p><b>Join date:</b> <%= time_ago_in_words(@user.created_at) %> ago</p>
-    <p><b>Total posts:</b> <%= @user.posts_count %></p>
-    <p><b>Total topics started:</b> <%= @user.topics_count %></p>
-  </div>
-</div>
+
+  <ul class="info">
+    <li><strong>Username:</strong> <%= @user.name %></li>
+    <li><strong>Location:</strong> <%= @user.time_zone %> (should be location)</li>
+    <li><strong>Last activity:</strong> <%= time_ago_in_words(@user.last_sign_in_at) %> ago</li>
+    <li><strong>Join date:</strong> <%= time_ago_in_words(@user.created_at) %> ago</li>
+    <li><strong>Total posts:</strong> <%= @user.posts_count %></li>
+    <li><strong>Total topics started:</strong> <%= @user.topics_count %></li>
+  </ul>
+</header>
 
 <div id="user-profile-recent-posts">
   <h2>Recent Forum History</h2>
-  <span>
-    <%= @user.topics_count %> topics started and <%= @user.posts_count %> posts since joining on <%= @user.created_at.strftime('%e %b %Y') %>
-  </span>
 
-  <% unless @user.topics.nil? %>
+  <p>
+    <%= @user.topics_count %> topics started and <%= @user.posts_count %>
+    posts since joining on <%= @user.formatted_created_date %>
+  </p>
+
+  <% if @user.topics_count > 0 %>
     <table width="100%">
+      <thead>
         <tr>
-          <th class="user-profile-recent-posts-th-first">
-            Title
-          </th>
-          <th class="user-profile-recent-posts-th" width="100">
-            # Replies
-          </th>
-          <th class="user-profile-recent-posts-th" width="130">
-            Topic created
-          </th>
-          <th class="user-profile-recent-posts-th" width="130">
-            Last update
-          </th>
+          <th class="title"> Title </th>
+          <th class="replies" width="100"> # Replies </th>
+          <th class="created" width="130"> Topic created </th>
+          <th class="updated" width="130"> Last update </th>
         </tr>
-      <% @user.topics.each do |t| %>
-        <% if t.type.nil? %>
-        <tr>
-          <td class="user-profile-recent-posts-table-cell-first">
-            <%= t.title %>
-          </td>
-          <td class="user-profile-recent-posts-table-cell">
-            <%= t.posts_count %>
-          </td>
-          <td class="user-profile-recent-posts-table-cell">
-            <%= t.created_at.strftime('%e %b %Y') %>
-          </td>
-          <td class="user-profile-recent-posts-table-cell">
-            <%= t.updated_at.strftime('%e %b %Y') %>
-          </td>
-        </tr>
-        <% end %>
-      <% end %>
+      </thead>
+
+      <%= render partial: 'topics/recent_topics_by_user',
+        collection: @user.topics.limit(10),
+        as: :topic %>
     </table>
   <% end %>
 </div>
