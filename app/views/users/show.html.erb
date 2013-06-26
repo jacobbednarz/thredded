@@ -33,8 +33,7 @@
       </thead>
 
       <%= render partial: 'topics/recent_topics_by_user',
-        collection: @user.topics.limit(10).where(:type => nil),
-        as: :topic %>
+        collection: @recent_topics, as: :topic %>
     </table>
   <% end %>
 </div>
